@@ -42,12 +42,29 @@ export default function AdminSettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
-    // For now, just show success (settings update API can be added later)
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(settings),
+      });
+
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        alert("Saqlashda xatolik yuz berdi!");
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Saqlashda xatolik yuz berdi!");
+    } finally {
       setSaving(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }, 500);
+    }
   };
 
   if (loading) {

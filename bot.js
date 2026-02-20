@@ -23,5 +23,15 @@ bot.command("start", async (ctx) => {
   );
 });
 
+bot.command("admin", async (ctx) => {
+  const webAppUrl = process.env.WEBAPP_URL || "https://example.com";
+  const keyboard = new InlineKeyboard().webApp(
+    "🔐 Admin panelni ochish",
+    webAppUrl + "/admin/login"
+  );
+
+  await ctx.reply("Admin paneliga kirish:", { reply_markup: keyboard });
+});
+
 bot.start();
 console.log("🤖 Bot ishga tushdi...");
