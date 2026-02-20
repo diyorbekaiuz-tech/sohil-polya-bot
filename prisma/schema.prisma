@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Field {
+  id          String    @id @default(cuid())
+  name        String
+  surface     String    @default("chim")
+  description String    @default("")
+  order       Int       @default(0)
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  fieldId       String
+  field         Field    @relation(fields: [fieldId], references: [id])
+  date          String   // YYYY-MM-DD format
+  startTime     String   // HH:mm format
+  endTime       String   // HH:mm format
+  status        String   @default("pending") // pending, confirmed, cancelled, blocked
+  customerName  String   @default("")
+  customerPhone String   @default("")
+  telegramUserId String? // Telegram User ID
+  telegramUsername String? // Telegram Username
+  teamName      String   @default("")
+  note          String   @default("")
+  blockReason   String   @default("") // for blocked slots: ta'mir, turnir, yopiq
+  price         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([fieldId, date])
+  @@index([date, status])
+}
+
+model Settings {
+  id                String @id @default("default")
+  openingTime       String @default("06:00")
+  closingTime       String @default("24:00")
+  slotDurations     String @default("[60,120]") // JSON array
+  pricePerHour      Int    @default(200000) // UZS
+  priceEvening      Int    @default(300000) // UZS (after 18:00)
+  contactPhone      String @default("+998901234567")
+  contactTelegram   String @default("@chim_admin")
+  locationAddress   String @default("")
+  locationLat       Float  @default(0)
+  locationLng       Float  @default(0)
+  cancellationPolicy String @default("Bronni bekor qilish uchun kamida 2 soat oldin xabar bering.")
+  currency          String @default("UZS")
+  timezone          String @default("Asia/Tashkent")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
