@@ -31,12 +31,20 @@ export default function HomePage() {
 
   useEffect(() => {
     fetch("/api/fields")
-      .then((r) => r.json())
-      .then(setFields)
+      .then((r) => {
+        if (!r.ok) throw new Error("API error");
+        return r.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) setFields(data);
+      })
       .catch(console.error);
 
     fetch("/api/settings")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("API error");
+        return r.json();
+      })
       .then(setSettings)
       .catch(console.error);
   }, []);

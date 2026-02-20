@@ -62,11 +62,16 @@ function BookingPageContent() {
   // Fetch fields
   useEffect(() => {
     fetch("/api/fields")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("API error");
+        return r.json();
+      })
       .then((data) => {
-        setFields(data);
-        if (!selectedField && data.length > 0) {
-          setSelectedField(data[0].id);
+        if (Array.isArray(data)) {
+          setFields(data);
+          if (!selectedField && data.length > 0) {
+            setSelectedField(data[0].id);
+          }
         }
       })
       .catch(console.error);
