@@ -40,14 +40,14 @@ export async function POST(req: NextRequest) {
       date,
       startTime,
       endTime,
-      customerName,
-      customerPhone,
+      name,
+      phone,
       teamName,
       note,
     } = body;
 
     // Validate required fields
-    if (!fieldId || !date || !startTime || !endTime || !customerName || !customerPhone) {
+    if (!fieldId || !date || !startTime || !endTime || !name || !phone) {
       return NextResponse.json(
         { error: "Barcha majburiy maydonlarni to'ldiring" },
         { status: 400 }
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate phone
-    if (!isValidPhone(customerPhone)) {
+    if (!isValidPhone(phone)) {
       return NextResponse.json(
         { error: "Telefon raqam noto'g'ri formatda. Masalan: +998901234567" },
         { status: 400 }
