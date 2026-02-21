@@ -197,6 +197,7 @@ function BookingPageContent() {
             fieldName={selectedFieldData.field.name}
             onSlotClick={handleSlotClick}
             selectedSlot={selectedSlot}
+            duration={duration}
           />
         ) : (
           <div className="text-center py-12 text-gray-400 text-sm">

@@ -22,6 +22,7 @@ interface TimeGridProps {
   fieldName: string;
   onSlotClick: (slot: TimeSlot) => void;
   selectedSlot: TimeSlot | null;
+  duration: number;
 }
 
 export default function TimeGrid({
@@ -29,7 +30,32 @@ export default function TimeGrid({
   fieldName,
   onSlotClick,
   selectedSlot,
+  duration,
 }: TimeGridProps) {
+
+  // Calculate end time for display based on duration
+  const getEndTime = (startTime: string): string => {
+    const [h, m] = startTime.split(":").map(Number);
+    const endMinutes = h * 60 + m + duration;
+    const endH = Math.floor(endMinutes / 60);
+    const endM = endMinutes % 60;
+    return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+  };
+
+  // Check if a slot can fit the selected duration
+  // For 120 min: the next slot must also be free
+  const canFitDuration = (slotIndex: number): boolean => {
+    if (duration <= 60) return true;
+
+    const slotsNeeded = duration / 60;
+    for (let i = 0; i < slotsNeeded; i++) {
+      const idx = slotIndex + i;
+      if (idx >= slots.length) return false;
+      if (slots[idx].status !== "free") return false;
+    }
+    return true;
+  };
+
   const getSlotStyles = (status: string) => {
     switch (status) {
       case "free":
@@ -40,6 +66,8 @@ export default function TimeGrid({
         return "bg-amber-50 border-amber-200 cursor-not-allowed animate-pulse-soft";
       case "blocked":
         return "bg-gray-100 border-gray-200 cursor-not-allowed opacity-60";
+      case "unavailable":
+        return "bg-gray-50 border-gray-200 cursor-not-allowed opacity-40";
       default:
         return "bg-gray-50 border-gray-200";
     }
@@ -55,6 +83,8 @@ export default function TimeGrid({
         return "Kutilmoqda";
       case "blocked":
         return "Bloklangan";
+      case "unavailable":
+        return "Sig'maydi";
       default:
         return status;
     }
@@ -70,10 +100,17 @@ export default function TimeGrid({
         return "bg-amber-500";
       case "blocked":
         return "bg-gray-500";
+      case "unavailable":
+        return "bg-gray-300";
       default:
         return "bg-gray-300";
     }
   };
+
+  // Count available slots (considering duration)
+  const availableCount = slots.filter(
+    (s, i) => s.status === "free" && canFitDuration(i)
+  ).length;
 
   return (
     <div className="space-y-1.5">
@@ -87,46 +124,50 @@ export default function TimeGrid({
         <h3 className="text-sm font-semibold text-gray-800">{fieldName}</h3>
         <div className="flex-1" />
         <span className="text-[10px] text-gray-400">
-          {slots.filter((s) => s.status === "free").length} ta bo'sh
+          {availableCount} ta bo&apos;sh
         </span>
       </div>
 
       {/* Time slots grid */}
       <div className="grid grid-cols-3 gap-1.5">
-        {slots.map((slot) => {
+        {slots.map((slot, index) => {
           const isFree = slot.status === "free";
+          const canFit = isFree && canFitDuration(index);
+          const effectiveStatus = isFree && !canFit ? "unavailable" : slot.status;
+          const isClickable = isFree && canFit;
+          const endTime = getEndTime(slot.start);
           const isSelected =
-            selectedSlot?.start === slot.start && selectedSlot?.end === slot.end;
+            selectedSlot?.start === slot.start;
 
           return (
             <button
               key={`${slot.start}-${slot.end}`}
-              onClick={() => isFree && onSlotClick(slot)}
-              disabled={!isFree}
+              onClick={() => isClickable && onSlotClick(slot)}
+              disabled={!isClickable}
               className={`
                 relative rounded-xl border p-2.5 transition-all duration-150 press-effect
-                ${getSlotStyles(slot.status)}
+                ${getSlotStyles(effectiveStatus)}
                 ${isSelected ? "!bg-green-500 !border-green-600 ring-2 ring-green-400 ring-offset-1" : ""}
               `}
             >
-              {/* Time */}
+              {/* Time range */}
               <div
                 className={`text-sm font-bold ${
-                  isSelected ? "text-white" : isFree ? "text-green-700" : "text-gray-500"
+                  isSelected ? "text-white" : isClickable ? "text-green-700" : "text-gray-500"
                 }`}
               >
-                {slot.start}
+                {slot.start} - {endTime}
               </div>
 
               {/* Status */}
               <div className="flex items-center gap-1 mt-0.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white" : getStatusDot(slot.status)}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white" : getStatusDot(effectiveStatus)}`} />
                 <span
                   className={`text-[10px] ${
-                    isSelected ? "text-green-100" : isFree ? "text-green-600" : "text-gray-400"
+                    isSelected ? "text-green-100" : isClickable ? "text-green-600" : "text-gray-400"
                   }`}
                 >
-                  {isSelected ? "Tanlandi" : getStatusLabel(slot.status)}
+                  {isSelected ? "Tanlandi" : getStatusLabel(effectiveStatus)}
                 </span>
               </div>
 

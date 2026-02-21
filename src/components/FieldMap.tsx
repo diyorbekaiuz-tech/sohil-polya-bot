@@ -53,7 +53,7 @@ export default function FieldMap({
       <div className="absolute inset-0 flex items-center px-4 py-3 gap-0">
 
         {/* Left group: Maydon 2 & Maydon 3 */}
-        <div className={`flex gap-1.5 ${compact ? "h-24" : "h-32"}`} style={{ flex: '0 0 52%' }}>
+        <div className={`flex gap-1.5 ${compact ? "h-24" : "h-32"}`} style={{ flex: '0 0 56%' }}>
           {defaultFields.slice(1, 3).map((field) => {
             const isSelected = selectedField === field.id;
             return (
@@ -94,14 +94,14 @@ export default function FieldMap({
         </div>
 
         {/* Gap area (building/path between fields) */}
-        <div className="flex-1 flex items-end justify-center pb-2" style={{ minWidth: '14%' }}>
+        <div className="flex-1 flex items-end justify-center pb-2" style={{ minWidth: '10%' }}>
           <div className={`w-full ${compact ? "h-6" : "h-8"} bg-green-700/40 rounded-md border border-green-600/20 flex items-center justify-center`}>
             <span className="text-[7px] text-green-400/50 font-medium">🏠</span>
           </div>
         </div>
 
         {/* Right side: Maydon 1 */}
-        <div className={`${compact ? "h-24" : "h-32"}`} style={{ flex: '0 0 30%' }}>
+        <div className={`${compact ? "h-24" : "h-32"}`} style={{ flex: '0 0 28%' }}>
           {defaultFields.slice(0, 1).map((field) => {
             const isSelected = selectedField === field.id;
             return (
@@ -120,13 +120,13 @@ export default function FieldMap({
                 {/* Field lines */}
                 <div className="absolute inset-1 border border-white/20 rounded-lg">
                   <div className="absolute top-1/2 left-0 right-0 h-px bg-white/20" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 border border-white/20 rounded-full" />
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-2.5 border-b border-l border-r border-white/15 rounded-b" />
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-2.5 border-t border-l border-r border-white/15 rounded-t" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border border-white/20 rounded-full" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-2 border-b border-l border-r border-white/15 rounded-b" />
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-2 border-t border-l border-r border-white/15 rounded-t" />
                 </div>
 
-                <div className={`absolute bottom-1.5 left-0 right-0 text-center ${isSelected ? "text-white" : "text-green-200"}`}>
-                  <span className={`font-bold ${compact ? "text-[9px]" : "text-[11px]"}`}>{field.name}</span>
+                <div className={`absolute bottom-1 left-0 right-0 text-center ${isSelected ? "text-white" : "text-green-200"}`}>
+                  <span className={`font-bold ${compact ? "text-[9px]" : "text-[10px]"}`}>{field.name}</span>
                 </div>
 
                 {isSelected && (
