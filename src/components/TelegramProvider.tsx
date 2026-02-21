@@ -45,6 +45,13 @@ export default function TelegramProvider({
       }
       setIsReady(true);
     }
+
+    // Save phone from URL params to localStorage (set by bot)
+    const urlParams = new URLSearchParams(window.location.search);
+    const phoneFromUrl = urlParams.get("phone");
+    if (phoneFromUrl) {
+      localStorage.setItem("tg_phone", phoneFromUrl);
+    }
   }, []);
 
   return (

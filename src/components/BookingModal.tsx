@@ -43,11 +43,10 @@ export default function BookingModal({
 
   useEffect(() => {
     if (isOpen) {
-      // Auto-fill phone from URL params (set by bot when sharing contact)
-      const urlParams = new URLSearchParams(window.location.search);
-      const phoneFromUrl = urlParams.get("phone");
-      if (phoneFromUrl && phone === "+998") {
-        setPhone(phoneFromUrl);
+      // Auto-fill phone from localStorage (saved by TelegramProvider from bot URL)
+      const savedPhone = localStorage.getItem("tg_phone");
+      if (savedPhone && phone === "+998") {
+        setPhone(savedPhone);
       }
 
       // Auto-fill from Telegram user data
