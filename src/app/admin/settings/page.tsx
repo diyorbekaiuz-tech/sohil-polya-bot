@@ -30,7 +30,9 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings")
+    fetch("/api/admin/settings", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` },
+    })
       .then((r) => r.json())
       .then((data) => {
         setSettings(data);
@@ -44,7 +46,7 @@ export default function AdminSettingsPage() {
     setSaved(false);
     try {
       const token = localStorage.getItem("admin_token");
-      const res = await fetch("/api/settings", {
+      const res = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
