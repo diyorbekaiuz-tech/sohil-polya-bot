@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 
+// Disable Vercel caching - always return fresh data
+export const dynamic = 'force-dynamic';
+
 // GET /api/settings - public settings
 export async function GET() {
   try {

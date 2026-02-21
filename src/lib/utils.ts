@@ -13,18 +13,23 @@ export function generateTimeSlots(
   const [closeH, closeM] = closingTime.split(":").map(Number);
 
   let currentMinutes = openH * 60 + openM;
-  const endMinutes = closeH * 60 + closeM;
+  let endMinutes = closeH * 60 + closeM;
+
+  // If closing time is before opening time, it means past midnight (e.g. 16:00 - 02:00)
+  if (endMinutes <= currentMinutes) {
+    endMinutes += 24 * 60; // Add 24 hours
+  }
+
+  const formatTime = (totalMinutes: number): string => {
+    const h = Math.floor(totalMinutes / 60) % 24;
+    const m = totalMinutes % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
 
   while (currentMinutes + durationMinutes <= endMinutes) {
-    const startH = Math.floor(currentMinutes / 60);
-    const startM = currentMinutes % 60;
-    const endTotalM = currentMinutes + durationMinutes;
-    const endH = Math.floor(endTotalM / 60);
-    const endM = endTotalM % 60;
-
     slots.push({
-      start: `${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}`,
-      end: `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`,
+      start: formatTime(currentMinutes),
+      end: formatTime(currentMinutes + durationMinutes),
     });
 
     currentMinutes += durationMinutes;
@@ -47,10 +52,14 @@ export function isTimeOverlap(
     return h * 60 + m;
   };
 
-  const s1 = toMinutes(start1);
-  const e1 = toMinutes(end1);
-  const s2 = toMinutes(start2);
-  const e2 = toMinutes(end2);
+  let s1 = toMinutes(start1);
+  let e1 = toMinutes(end1);
+  let s2 = toMinutes(start2);
+  let e2 = toMinutes(end2);
+
+  // Handle past-midnight (e.g. 23:00-01:00)
+  if (e1 <= s1) e1 += 24 * 60;
+  if (e2 <= s2) e2 += 24 * 60;
 
   return s1 < e2 && s2 < e1;
 }
