@@ -38,7 +38,12 @@ bot.on("message:contact", async (ctx) => {
   );
 
   await ctx.reply(
-    `✅ Rahmat! Telefon raqamingiz: ${phone}\n\nQuyidagi tugmani bosib maydonlarni bron qilishingiz mumkin:`,
+    `✅ Rahmat! Telefon raqamingiz: ${phone}`,
+    { reply_markup: { remove_keyboard: true } }
+  );
+
+  await ctx.reply(
+    "Quyidagi tugmani bosib maydonlarni bron qilishingiz mumkin:",
     { reply_markup: keyboard }
   );
 });
