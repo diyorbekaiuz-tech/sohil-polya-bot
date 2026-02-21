@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Lock, User, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Loader2 } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -19,15 +19,44 @@ interface Field {
   name: string;
 }
 
-const HOURS = Array.from({ length: 18 }, (_, i) => {
-  const h = i + 6;
-  return `${String(h).padStart(2, "0")}:00`;
-});
+interface Settings {
+  openingTime: string;
+  closingTime: string;
+}
+
+// Generate hours between opening and closing, supporting past-midnight
+function generateCalendarHours(openingTime: string, closingTime: string): string[] {
+  const [openH] = openingTime.split(":").map(Number);
+  const [closeH] = closingTime.split(":").map(Number);
+
+  const hours: string[] = [];
+  let h = openH;
+
+  // If closing <= opening, it crosses midnight
+  const crossesMidnight = closeH <= openH;
+  const endHour = crossesMidnight ? closeH + 24 : closeH;
+
+  while (h < endHour) {
+    const displayH = h % 24;
+    hours.push(`${String(displayH).padStart(2, "0")}:00`);
+    h++;
+  }
+
+  return hours;
+}
+
+// Helper: get next day date string
+function getNextDate(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split("T")[0];
+}
 
 export default function AdminCalendarPage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [fields, setFields] = useState<Field[]>([]);
+  const [settings, setSettings] = useState<Settings>({ openingTime: "06:00", closingTime: "24:00" });
   const [loading, setLoading] = useState(true);
 
   // Block form
@@ -37,25 +66,47 @@ export default function AdminCalendarPage() {
   const [blockEnd, setBlockEnd] = useState("");
   const [blockReason, setBlockReason] = useState("");
 
+  const crossesMidnight = (() => {
+    const [openH] = settings.openingTime.split(":").map(Number);
+    const [closeH] = settings.closingTime.split(":").map(Number);
+    return closeH <= openH;
+  })();
+
   const fetchData = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("admin_token");
+      const nextDate = getNextDate(date);
 
-      const [fieldsRes, bookingsRes] = await Promise.all([
+      // Fetch settings, fields, and bookings for both dates
+      const [settingsRes, fieldsRes, bookingsRes, nextDayBookingsRes] = await Promise.all([
+        fetch("/api/settings"),
         fetch("/api/fields"),
         fetch(`/api/admin/bookings?date=${date}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
+        crossesMidnight ? fetch(`/api/admin/bookings?date=${nextDate}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }) : Promise.resolve(null),
       ]);
 
+      if (settingsRes.ok) {
+        const sData = await settingsRes.json();
+        setSettings({ openingTime: sData.openingTime || "06:00", closingTime: sData.closingTime || "24:00" });
+      }
       if (fieldsRes.ok) setFields(await fieldsRes.json());
+
+      let allBookings: Booking[] = [];
       if (bookingsRes.ok) {
         const data = await bookingsRes.json();
-        setBookings(
-          (data.bookings || []).filter((b: Booking) => b.date === date)
-        );
+        allBookings = (data.bookings || []).filter((b: Booking) => b.date === date);
       }
+      if (nextDayBookingsRes && nextDayBookingsRes.ok) {
+        const data = await nextDayBookingsRes.json();
+        const nextDayBookings = (data.bookings || []).filter((b: Booking) => b.date === nextDate);
+        allBookings = [...allBookings, ...nextDayBookings];
+      }
+      setBookings(allBookings);
     } catch (error) {
       console.error("Calendar error:", error);
     } finally {
@@ -73,12 +124,25 @@ export default function AdminCalendarPage() {
     setDate(d.toISOString().split("T")[0]);
   };
 
+  // Determine which date a calendar hour belongs to
+  const getDateForHour = (hourStr: string): string => {
+    if (!crossesMidnight) return date;
+    const [h] = hourStr.split(":").map(Number);
+    const [closeH] = settings.closingTime.split(":").map(Number);
+    // Hours past midnight (0, 1, ..., closeH-1) belong to next day
+    if (h < closeH) return getNextDate(date);
+    return date;
+  };
+
   const getBookingForSlot = (fieldId: string, hour: string) => {
     const hourNum = parseInt(hour.split(":")[0]);
+    const slotDate = getDateForHour(hour);
+
     return bookings.find((b) => {
       if (b.fieldId !== fieldId) return false;
+      if (b.date !== slotDate) return false;
       const startH = parseInt(b.startTime.split(":")[0]);
-      const endH = parseInt(b.endTime.split(":")[0]);
+      const endH = parseInt(b.endTime.split(":")[0]) || 24;
       return hourNum >= startH && hourNum < endH;
     });
   };
@@ -136,6 +200,9 @@ export default function AdminCalendarPage() {
   const dayNames = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
   const dateObj = new Date(date + "T00:00:00");
   const dayName = dayNames[dateObj.getDay()];
+
+  // Generate dynamic hours based on settings
+  const HOURS = generateCalendarHours(settings.openingTime, settings.closingTime);
 
   return (
     <div className="space-y-4">
@@ -231,49 +298,57 @@ export default function AdminCalendarPage() {
           </div>
 
           {/* Time Rows */}
-          {HOURS.map((hour) => (
-            <div
-              key={hour}
-              className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-gray-50"
-            >
-              <div className="p-2 text-xs text-gray-400 text-center font-mono">
-                {hour}
+          {HOURS.map((hour) => {
+            const hourNum = parseInt(hour.split(":")[0]);
+            const isPastMidnightHour = crossesMidnight && hourNum < parseInt(settings.closingTime.split(":")[0]);
+
+            return (
+              <div
+                key={hour}
+                className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-gray-50"
+              >
+                <div className="p-2 text-xs text-gray-400 text-center font-mono">
+                  {hour}
+                  {isPastMidnightHour && (
+                    <span className="block text-[8px] text-blue-400">+1 kun</span>
+                  )}
+                </div>
+                {fields.map((field) => {
+                  const booking = getBookingForSlot(field.id, hour);
+                  return (
+                    <div
+                      key={field.id}
+                      className={`p-1.5 border-l border-gray-50 min-h-[44px] ${
+                        booking
+                          ? getSlotColor(booking.status)
+                          : "bg-green-50/50"
+                      }`}
+                    >
+                      {booking && (
+                        <div className="text-[10px] leading-tight">
+                          <div className="font-medium truncate">
+                            {booking.status === "blocked"
+                              ? booking.blockReason || "Bloklangan"
+                              : booking.customerName}
+                          </div>
+                          <div className="opacity-75">
+                            {booking.startTime}–{booking.endTime}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              {fields.map((field) => {
-                const booking = getBookingForSlot(field.id, hour);
-                return (
-                  <div
-                    key={field.id}
-                    className={`p-1.5 border-l border-gray-50 min-h-[44px] ${
-                      booking
-                        ? getSlotColor(booking.status)
-                        : "bg-green-50/50"
-                    }`}
-                  >
-                    {booking && (
-                      <div className="text-[10px] leading-tight">
-                        <div className="font-medium truncate">
-                          {booking.status === "blocked"
-                            ? booking.blockReason || "Bloklangan"
-                            : booking.customerName}
-                        </div>
-                        <div className="opacity-75">
-                          {booking.startTime}–{booking.endTime}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs text-gray-500">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-green-50 border border-green-200" /> Bo'sh
+          <span className="w-3 h-3 rounded bg-green-50 border border-green-200" /> Bo&apos;sh
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded bg-red-400" /> Band

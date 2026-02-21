@@ -216,7 +216,7 @@ function BookingPageContent() {
           }}
           selectedField={selectedField}
           fieldName={fields.find((f) => f.id === selectedField)?.name || "Maydon"}
-          selectedDate={selectedDate}
+          selectedDate={(selectedSlot as any).actualDate || selectedDate}
           startTime={selectedSlot.start}
           endTime={selectedSlot.end}
           duration={duration}
