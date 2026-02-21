@@ -40,12 +40,18 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
+  const [todayDate, setTodayDate] = useState("");
+
+  useEffect(() => {
+    setTodayDate(new Date().toISOString().split("T")[0]);
+  }, []);
+
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("admin_token");
-      const today = new Date().toISOString().split("T")[0];
 
-      const res = await fetch(`/api/admin/bookings?date=${today}`, {
+      // Fetch ALL bookings instead of just today's
+      const res = await fetch(`/api/admin/bookings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -202,14 +208,14 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {bookings.length === 0 ? (
+        {bookings.filter(b => b.date === todayDate).length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100">
             <CalendarCheck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-400">Bugun hali bron yo'q</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {bookings.map((booking) => (
+            {bookings.filter(b => b.date === todayDate).map((booking) => (
               <div
                 key={booking.id}
                 className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-3"
