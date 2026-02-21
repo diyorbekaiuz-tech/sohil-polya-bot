@@ -127,7 +127,7 @@ export default function BookingModal({
         className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity"
         onClick={onClose}
       />
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md pointer-events-auto animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="relative z-10 bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md pointer-events-auto animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 px-5 pt-5">
           <div>
