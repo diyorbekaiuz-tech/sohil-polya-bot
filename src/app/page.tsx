@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Phone, Clock, ChevronRight, Zap, Shield, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FieldMap from "@/components/FieldMap";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface Field {
@@ -26,6 +27,7 @@ interface Settings {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [fields, setFields] = useState<Field[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
 
@@ -92,7 +94,7 @@ export default function HomePage() {
           <FieldMap
             fields={fields}
             selectedField={null}
-            onSelectField={() => {}}
+            onSelectField={(id) => router.push(`/booking?field=${id}`)}
             compact
           />
         </div>
