@@ -68,19 +68,21 @@ export default function ContactPage() {
               {settings?.locationAddress || "Toshkent shahri"}
             </p>
           </div>
-          {/* Map placeholder */}
-          <div className="h-48 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center relative">
-            <div className="text-center">
-              <MapPin className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="text-sm text-green-700 font-medium">
-                Xarita yuklanmoqda...
-              </p>
-            </div>
+          {/* Yandex Map */}
+          <div className="h-48 relative">
+            <iframe
+              src="https://yandex.uz/map-widget/v1/?ll=67.313815%2C37.233445&z=17&pt=67.313815%2C37.233445%2Cpm2rdm"
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              allowFullScreen
+              style={{ position: 'absolute', top: 0, left: 0 }}
+            />
             <a
-              href="https://maps.google.com"
+              href="https://yandex.uz/maps?whatshere%5Bpoint%5D=67.313815%2C37.233445&whatshere%5Bzoom%5D=18&ll=67.313815%2C37.233445&z=18"
               target="_blank"
               rel="noopener noreferrer"
-              className="absolute bottom-3 right-3 bg-white text-green-700 text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1"
+              className="absolute bottom-3 right-3 bg-white text-green-700 text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1 z-10"
             >
               <ExternalLink className="w-3 h-3" />
               Xaritada ochish

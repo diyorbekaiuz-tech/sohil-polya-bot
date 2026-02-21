@@ -39,20 +39,30 @@ export default function BookingModal({
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false); // Renamed from 'success'
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    if (isOpen && telegramUser) {
-      if (telegramUser.first_name) {
-        let fullName = telegramUser.first_name;
-        if (telegramUser.last_name) fullName += " " + telegramUser.last_name;
-        setName(fullName);
+    if (isOpen) {
+      // Auto-fill phone from URL params (set by bot when sharing contact)
+      const urlParams = new URLSearchParams(window.location.search);
+      const phoneFromUrl = urlParams.get("phone");
+      if (phoneFromUrl && phone === "+998") {
+        setPhone(phoneFromUrl);
       }
-      if (telegramUser.username && !teamName) {
-        setTeamName("@" + telegramUser.username);
+
+      // Auto-fill from Telegram user data
+      if (telegramUser) {
+        if (telegramUser.first_name && !name) {
+          let fullName = telegramUser.first_name;
+          if (telegramUser.last_name) fullName += " " + telegramUser.last_name;
+          setName(fullName);
+        }
+        if (telegramUser.username && !teamName) {
+          setTeamName("@" + telegramUser.username);
+        }
       }
     }
-  }, [isOpen, telegramUser, teamName]); // Added teamName to dependency array
+  }, [isOpen, telegramUser]);
 
   if (!isOpen) return null;
 
@@ -190,10 +200,10 @@ export default function BookingModal({
             </div>
           </div>
 
-          {/* Team name */}
+          {/* Telegram username */}
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1 block">
-              Jamoa nomi (ixtiyoriy)
+              Telegram foydalanuvchi nomi (ixtiyoriy)
             </label>
             <div className="relative">
               <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -201,7 +211,7 @@ export default function BookingModal({
                 type="text"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                placeholder="FC Spartak"
+                placeholder="@username"
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
