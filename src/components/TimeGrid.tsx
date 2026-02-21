@@ -37,7 +37,7 @@ export default function TimeGrid({
   const getEndTime = (startTime: string): string => {
     const [h, m] = startTime.split(":").map(Number);
     const endMinutes = h * 60 + m + duration;
-    const endH = Math.floor(endMinutes / 60);
+    const endH = Math.floor(endMinutes / 60) % 24;
     const endM = endMinutes % 60;
     return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   };

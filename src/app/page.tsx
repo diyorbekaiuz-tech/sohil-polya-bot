@@ -142,7 +142,6 @@ export default function HomePage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{field.name}</h3>
-                  <p className="text-sm text-gray-500">{field.description}</p>
                   <p className="text-xs text-green-600 font-medium mt-0.5">
                     {field.surface}
                   </p>
