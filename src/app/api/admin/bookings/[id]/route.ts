@@ -70,6 +70,24 @@ export async function PATCH(
       include: { field: true },
     });
 
+    // Send Telegram Notification if status changed to confirmed
+    if (status === "confirmed" && existing.status !== "confirmed" && updated.telegramUserId) {
+      const botToken = process.env.BOT_TOKEN;
+      if (botToken) {
+        const text = `✅ *Admin vaqtingizni tasdiqladi!*\n\n📅 Sana: ${updated.date}\n⏰ Vaqt: ${updated.startTime} - ${updated.endTime}\n🏟 Maydon: ${updated.field.name}\n\nIltimos, o'yin boshlanishidan kamida 5 daqiqa oldin maydonda bo'ling. O'yin boshlanish vaqti belgilangan vaqtdan ozgina farq qilishi mumkin.`;
+        
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: updated.telegramUserId,
+            text,
+            parse_mode: "Markdown"
+          }),
+        }).catch(err => console.error("Telegram notification error:", err));
+      }
+    }
+
     return NextResponse.json({
       message: "Bron yangilandi",
       booking: updated,

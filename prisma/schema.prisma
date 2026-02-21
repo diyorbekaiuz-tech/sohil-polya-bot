@@ -35,6 +35,7 @@ model Booking {
   note          String   @default("")
   blockReason   String   @default("") // for blocked slots: ta'mir, turnir, yopiq
   price         Int      @default(0)
+  reminderSent  Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
