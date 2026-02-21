@@ -11,6 +11,8 @@ interface Booking {
   endTime: string;
   status: string;
   customerName: string;
+  customerPhone?: string;
+  teamName?: string;
   blockReason: string;
 }
 
@@ -162,6 +164,14 @@ export default function AdminCalendarPage() {
     }
   };
 
+  // Form Type: 'block' or 'book'
+  const [formType, setFormType] = useState<'block' | 'book'>('block');
+  
+  // Book form state
+  const [bookCustomerName, setBookCustomerName] = useState("");
+  const [bookCustomerPhone, setBookCustomerPhone] = useState("+998");
+  const [bookTeamName, setBookTeamName] = useState("");
+
   const handleBlock = async () => {
     if (!blockField || !blockStart || !blockEnd) return;
     try {
@@ -197,6 +207,50 @@ export default function AdminCalendarPage() {
     }
   };
 
+  const handleBook = async () => {
+    if (!blockField || !blockStart || !blockEnd || !bookCustomerName || !bookCustomerPhone) {
+        alert("Barcha majburiy maydonlarni to'ldiring");
+        return;
+    }
+    try {
+      const token = localStorage.getItem("admin_token");
+      const res = await fetch("/api/admin/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          fieldId: blockField,
+          date,
+          startTime: blockStart,
+          endTime: blockEnd,
+          customerName: bookCustomerName,
+          customerPhone: bookCustomerPhone,
+          teamName: bookTeamName,
+          status: "confirmed",
+          price: 0 // You can calculate price if needed, or leave 0 for admin override
+        }),
+      });
+
+      if (res.ok) {
+        setShowBlockForm(false);
+        setBlockField("");
+        setBlockStart("");
+        setBlockEnd("");
+        setBookCustomerName("");
+        setBookCustomerPhone("+998");
+        setBookTeamName("");
+        fetchData();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Xatolik yuz berdi");
+      }
+    } catch {
+      alert("Tarmoq xatoligi");
+    }
+  };
+
   const dayNames = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
   const dateObj = new Date(date + "T00:00:00");
   const dayName = dayNames[dateObj.getDay()];
@@ -213,7 +267,7 @@ export default function AdminCalendarPage() {
           className="flex items-center gap-1 px-3 py-2 bg-gray-700 text-white rounded-xl text-xs font-medium press-effect"
         >
           <Lock className="w-3 h-3" />
-          Vaqt bloklash
+          Vaqt boshqarish
         </button>
       </div>
 
@@ -231,15 +285,29 @@ export default function AdminCalendarPage() {
         </button>
       </div>
 
-      {/* Block Form */}
+      {/* Block/Book Form */}
       {showBlockForm && (
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3 animate-scale-in">
-          <h3 className="font-semibold text-gray-800 text-sm">Vaqt bloklash</h3>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-4 animate-scale-in">
+          <div className="flex bg-gray-100 p-1 rounded-xl">
+            <button
+               onClick={() => setFormType('block')}
+               className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${formType === 'block' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Vaqt bloklash
+            </button>
+            <button
+               onClick={() => setFormType('book')}
+               className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${formType === 'book' ? 'bg-white shadow text-green-600' : 'text-gray-500 hover:text-green-600'}`}
+            >
+              Bron qilish
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <select
               value={blockField}
               onChange={(e) => setBlockField(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-xl text-sm col-span-2"
+              className="px-3 py-2 border border-gray-200 rounded-xl text-sm col-span-2 outline-none focus:border-green-500"
             >
               <option value="">Maydon tanlang</option>
               {fields.map((f) => (
@@ -248,31 +316,64 @@ export default function AdminCalendarPage() {
                 </option>
               ))}
             </select>
-            <input
-              type="time"
-              value={blockStart}
-              onChange={(e) => setBlockStart(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-xl text-sm"
-            />
-            <input
-              type="time"
-              value={blockEnd}
-              onChange={(e) => setBlockEnd(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-xl text-sm"
-            />
-            <input
-              type="text"
-              value={blockReason}
-              onChange={(e) => setBlockReason(e.target.value)}
-              placeholder="Sabab: ta'mir, turnir..."
-              className="px-3 py-2 border border-gray-200 rounded-xl text-sm col-span-2"
-            />
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Boshlanish</label>
+              <input
+                type="time"
+                value={blockStart}
+                onChange={(e) => setBlockStart(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Tugash</label>
+              <input
+                type="time"
+                value={blockEnd}
+                onChange={(e) => setBlockEnd(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500"
+              />
+            </div>
+
+            {formType === 'block' ? (
+              <input
+                type="text"
+                value={blockReason}
+                onChange={(e) => setBlockReason(e.target.value)}
+                placeholder="Sabab: ta'mir, turnir..."
+                className="px-3 py-2 border border-gray-200 rounded-xl text-sm col-span-2 outline-none focus:border-gray-500"
+              />
+            ) : (
+              <>
+                <input
+                  type="text"
+                  value={bookCustomerName}
+                  onChange={(e) => setBookCustomerName(e.target.value)}
+                  placeholder="Ism (Majburiy)"
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm col-span-2 outline-none focus:border-green-500"
+                />
+                <input
+                  type="text"
+                  value={bookCustomerPhone}
+                  onChange={(e) => setBookCustomerPhone(e.target.value)}
+                  placeholder="Telefon raqam"
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500"
+                />
+                <input
+                  type="text"
+                  value={bookTeamName}
+                  onChange={(e) => setBookTeamName(e.target.value)}
+                  placeholder="Telegram @username"
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500"
+                />
+              </>
+            )}
           </div>
           <button
-            onClick={handleBlock}
-            className="w-full py-2.5 bg-gray-700 text-white font-medium rounded-xl text-sm press-effect"
+            onClick={formType === 'block' ? handleBlock : handleBook}
+            className={`w-full py-2.5 font-medium rounded-xl text-sm press-effect text-white ${formType === 'block' ? 'bg-gray-700' : 'bg-green-600'}`}
           >
-            Bloklash
+            {formType === 'block' ? 'Bloklash' : 'Bron qilish'}
           </button>
         </div>
       )}
@@ -325,7 +426,7 @@ export default function AdminCalendarPage() {
                       }`}
                     >
                       {booking && (
-                        <div className="text-[10px] leading-tight">
+                        <div className="text-[10px] leading-tight flex flex-col gap-1">
                           <div className="font-medium truncate">
                             {booking.status === "blocked"
                               ? booking.blockReason || "Bloklangan"
@@ -334,6 +435,30 @@ export default function AdminCalendarPage() {
                           <div className="opacity-75">
                             {booking.startTime}–{booking.endTime}
                           </div>
+                          {booking.status !== "blocked" && (
+                            <div className="mt-1 flex flex-col gap-0.5 max-w-full overflow-hidden">
+                              {booking.customerPhone && (
+                                <a 
+                                  href={`tel:${booking.customerPhone}`} 
+                                  className="text-white hover:underline truncate"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {booking.customerPhone}
+                                </a>
+                              )}
+                              {booking.teamName && booking.teamName.startsWith('@') && (
+                                <a 
+                                  href={`https://t.me/${booking.teamName.substring(1)}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-white hover:underline truncate"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {booking.teamName}
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
