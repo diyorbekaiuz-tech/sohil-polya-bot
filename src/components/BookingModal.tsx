@@ -127,9 +127,9 @@ export default function BookingModal({
         className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity"
         onClick={onClose}
       />
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-5 pb-8 sm:pb-5 pointer-events-auto animate-slide-up shadow-2xl safe-bottom">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md pointer-events-auto animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 px-5 pt-5">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Bron qilish</h2> {/* Changed h3 to h2 */}
             <p className="text-sm text-green-600 font-medium"> {/* Changed classes and content */}
@@ -145,7 +145,7 @@ export default function BookingModal({
         </div>
 
         {/* Price info */}
-        <div className="mx-4 mt-3 p-3 bg-green-50 rounded-xl flex justify-between items-center">
+        <div className="mx-5 mt-3 p-3 bg-green-50 rounded-xl flex justify-between items-center">
           <span className="text-sm text-green-700">
             {duration} daqiqa ({duration / 60} soat)
           </span>
@@ -153,7 +153,7 @@ export default function BookingModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-3">
+        <form onSubmit={handleSubmit} className="px-5 pb-8 space-y-3">
           {/* Name */}
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1 block">
