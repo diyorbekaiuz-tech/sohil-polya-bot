@@ -49,12 +49,12 @@ export default function FieldMap({
       {/* Facility boundary */}
       <div className="absolute inset-2 border border-green-500/30 rounded-xl" />
 
-      {/* Fields layout: [Maydon 2 | Maydon 3] --- gap --- [Maydon 1] */}
+      {/* Fields layout: [Maydon 3 | Maydon 2] --- gap --- [Maydon 1] */}
       <div className="absolute inset-0 flex items-center px-4 py-3 gap-0">
 
-        {/* Left group: Maydon 2 & Maydon 3 */}
+        {/* Left group: Maydon 3 & Maydon 2 */}
         <div className={`flex gap-1.5 ${compact ? "h-24" : "h-32"}`} style={{ flex: '0 0 56%' }}>
-          {defaultFields.slice(1, 3).map((field) => {
+          {defaultFields.slice(1, 3).reverse().map((field) => {
             const isSelected = selectedField === field.id;
             return (
               <button
