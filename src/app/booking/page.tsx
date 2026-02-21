@@ -225,7 +225,7 @@ function BookingPageContent() {
         />
       )}
 
-      <Navbar />
+      {!showModal && <Navbar />}
     </div>
   );
 }
