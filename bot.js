@@ -8,6 +8,16 @@ if (!token) {
   process.exit(1);
 }
 
+    const http = require("http");
+    const port = process.env.PORT || 8000;
+    http.createServer((req, res) => {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.write("Bot is running!");
+      res.end();
+    }).listen(port, () => {
+      console.log(`🌐 Dummy Web Server is listening on port ${port} (for Koyeb Health Check)`);
+    });
+
 const bot = new Bot(token);
 
 // /start - request phone number first
